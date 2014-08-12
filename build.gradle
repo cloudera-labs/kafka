@@ -24,6 +24,9 @@ allprojects {
   apply plugin: 'idea'
   repositories {
     mavenCentral()
+    maven {
+      url "https://repository.cloudera.com/content/repositories/snapshots"
+    }
   }
 }
 
@@ -212,13 +215,13 @@ project(':core') {
 
   dependencies {
     compile "org.scala-lang:scala-library:$scalaVersion"
-    compile 'org.apache.zookeeper:zookeeper:3.4.6'
+    compile 'org.apache.zookeeper:zookeeper:3.4.5-cdh5.2.0-SNAPSHOT'
     compile 'com.101tec:zkclient:0.3'
     compile 'com.yammer.metrics:metrics-core:2.2.0'
     compile 'net.sf.jopt-simple:jopt-simple:3.2'
-    compile 'org.xerial.snappy:snappy-java:1.0.5'
+    compile 'org.xerial.snappy:snappy-java:1.0.4.1'
 
-    testCompile 'junit:junit:4.1'
+    testCompile 'junit:junit:4.8.1'
     testCompile 'org.easymock:easymock:3.0'
     testCompile 'org.objenesis:objenesis:1.2'
     if (scalaVersion.startsWith('2.8')) {
@@ -288,56 +291,6 @@ project(':perf') {
     compile 'net.sf.jopt-simple:jopt-simple:3.2'
 
     zinc 'com.typesafe.zinc:zinc:0.2.5'
-  }
-}
-
-project(':contrib:hadoop-consumer') {
-  archivesBaseName = "kafka-hadoop-consumer"
-
-  dependencies {
-    compile project(':core')
-    compile "org.apache.avro:avro:1.4.0"
-    compile "org.apache.pig:pig:0.8.0"
-    compile "commons-logging:commons-logging:1.0.4"
-    compile "org.codehaus.jackson:jackson-core-asl:1.5.5"
-    compile "org.codehaus.jackson:jackson-mapper-asl:1.5.5"
-    compile "org.apache.hadoop:hadoop-core:0.20.2"
-    compile files('lib/piggybank.jar')
-  }
-
-  configurations {
-    // manually excludes some unnecessary dependencies
-    compile.exclude module: 'javax'
-    compile.exclude module: 'jms'
-    compile.exclude module: 'jmxri'
-    compile.exclude module: 'jmxtools'
-    compile.exclude module: 'mail'
-    compile.exclude module: 'netty'
-  }
-}
-
-project(':contrib:hadoop-producer') {
-  archivesBaseName = "kafka-hadoop-producer"
-
-  dependencies {
-    compile project(':core')
-    compile "org.apache.avro:avro:1.4.0"
-    compile "org.apache.pig:pig:0.8.0"
-    compile "commons-logging:commons-logging:1.0.4"
-    compile "org.codehaus.jackson:jackson-core-asl:1.5.5"
-    compile "org.codehaus.jackson:jackson-mapper-asl:1.5.5"
-    compile "org.apache.hadoop:hadoop-core:0.20.2"
-    compile files('lib/piggybank.jar')
-  }
-
-  configurations {
-    // manually excludes some unnecessary dependencies
-    compile.exclude module: 'javax'
-    compile.exclude module: 'jms'
-    compile.exclude module: 'jmxri'
-    compile.exclude module: 'jmxtools'
-    compile.exclude module: 'mail'
-    compile.exclude module: 'netty'
   }
 }
 
