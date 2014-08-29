@@ -1871,7 +1871,7 @@ def get_controller_attributes(systemTestEnv, testcaseEnv):
 
     cmdStrList = ["ssh " + hostname,
                   "\"JAVA_HOME=" + javaHome,
-                  kafkaRunClassBin + " org.apache.zookeeper.ZooKeeperMain",
+                  kafkaRunClassBin + " kafka.tools.ZooKeeperMainWrapper ",
                   "-server " + testcaseEnv.userDefinedEnvVarDict["sourceZkConnectStr"],
                   "get /controller 2> /dev/null | tail -1\""]
 
@@ -2247,7 +2247,7 @@ def get_leader_attributes(systemTestEnv, testcaseEnv):
 
     cmdStrList = ["ssh " + hostname,
                   "\"JAVA_HOME=" + javaHome,
-                  kafkaRunClassBin + " org.apache.zookeeper.ZooKeeperMain",
+                  kafkaRunClassBin + " kafka.tools.ZooKeeperMainWrapper ",
                   "-server " + testcaseEnv.userDefinedEnvVarDict["sourceZkConnectStr"],
                   zkQueryStr + " 2> /dev/null | tail -1\""]
     cmdStr = " ".join(cmdStrList)
