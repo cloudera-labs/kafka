@@ -22,10 +22,15 @@ buildscript {
 
 allprojects {
   apply plugin: 'idea'
+  apply plugin: 'java'
+  apply from: "$rootDir/pom.gradle"
+  parsepom.execute()
+  apply from: "$rootDir/version.properties"
+  apply from: "$rootDir/version.properties"
   repositories {
     mavenCentral()
     maven {
-      url "https://repository.cloudera.com/content/repositories/snapshots"
+      url "http://maven.jenkins.cloudera.com:8081/artifactory/cloudera-mirrors"
     }
   }
 }
@@ -38,16 +43,18 @@ subprojects {
   apply plugin: 'eclipse'
   apply plugin: 'maven'
   apply plugin: 'signing'
-
   uploadArchives {
     repositories {
       signing {
-        sign configurations.archives
+      //  sign configurations.archives
 
         // To test locally, replace mavenUrl in ~/.gradle/gradle.properties to file://localhost/tmp/myRepo/
         mavenDeployer {
-          beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-          repository(url: "${mavenUrl}") {
+  //        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+          repository(url: "http://maven.jenkins.cloudera.com:8081/artifactory/cdh-staging-local" ) {
+            authentication(userName: "${mavenUsername}", password: "${mavenPassword}")
+          }
+          snapshotRepository(url: "http://maven.jenkins.cloudera.com:8081/artifactory/cdh-snapshot-local") {
             authentication(userName: "${mavenUsername}", password: "${mavenPassword}")
           }
           afterEvaluate {
@@ -91,10 +98,12 @@ subprojects {
     }
 
     task docsJar(type: Jar, dependsOn: javadocJar) { }
+      def tgfile=file("build/distributions/kafka_${baseScalaVersion}-${version}.tgz")
 
     artifacts {
       archives srcJar
       archives javadocJar
+  //commenting out upload tar gz file for now     archives tgfile
     }
   }
 
@@ -133,13 +142,11 @@ subprojects {
 
 for ( sv in ['2_8_0', '2_9_1', '2_9_2', '2_10_1'] ) {
   String svInDot = sv.replaceAll( "_", ".")
-
   tasks.create(name: "jar_core_${sv}", type: GradleBuild) {
     buildFile = './build.gradle'
     tasks = ['core:jar']
     startParameter.projectProperties = [scalaVersion: "${svInDot}"]
   }
-
   tasks.create(name: "test_core_${sv}", type: GradleBuild) {
     buildFile = './build.gradle'
     tasks = ['core:test']
@@ -188,11 +195,11 @@ tasks.create(name: "uploadArchivesAll", dependsOn: ['uploadCoreArchives_2_8_0', 
 }
 
 project(':core') {
+
+ apply from: "$rootDir/version.properties" 
   println "Building project 'core' with Scala version $scalaVersion"
-
-  apply plugin: 'scala'
+ apply plugin: 'scala'
   archivesBaseName = "kafka_${baseScalaVersion}"
-
   def (major, minor, trivial) = scalaVersion.tokenize('.')
 
   if(major.toInteger() >= 2 && minor.toInteger() >= 9) {
@@ -215,7 +222,7 @@ project(':core') {
 
   dependencies {
     compile "org.scala-lang:scala-library:$scalaVersion"
-    compile 'org.apache.zookeeper:zookeeper:3.4.5-cdh5.2.0-SNAPSHOT'
+    compile "org.apache.zookeeper:zookeeper:$zookeeper_version"
     compile 'com.101tec:zkclient:0.3'
     compile 'com.yammer.metrics:metrics-core:2.2.0'
     compile 'net.sf.jopt-simple:jopt-simple:3.2'
@@ -261,7 +268,7 @@ project(':core') {
     from(configurations.archives.artifacts.files) { into("libs/") }
   }
 
-  jar {
+  jar  {
     dependsOn 'copyDependantLibs'
   }
 
