@@ -1,0 +1,16 @@
+//defaultTasks 'parspom'
+
+task readpom (type : Exec)  {
+def pomfile="$cdhversion" + '.pom'
+   commandLine  "/usr/bin/curl", "-o", "pom.xml", "http://maven.jenkins.cloudera.com:8081/artifactory/cloudera-mirrors/com/cloudera/cdh/cdh-root/$cdhversion/cdh-root-$pomfile"
+ }
+
+task parsepom  <<
+{
+ readpom.execute()
+def parser = new XmlSlurper(false,false).parse('pom.xml')
+
+def zookeeper_version=parser.properties.'cdh.zookeeper.version'
+def f1 = new File('version.properties')
+   f1.write("\next.zookeeper_version='$zookeeper_version'\n")
+}

@@ -24,8 +24,16 @@ def slf4jlog4j='org.slf4j:slf4j-log4j12:1.7.6'
 
 allprojects {
   apply plugin: 'idea'
+  apply plugin: 'java'
+  apply from: "$rootDir/pom.gradle"
+  parsepom.execute()
+  apply from: "$rootDir/version.properties"
+  apply from: "$rootDir/version.properties"
   repositories {
     mavenCentral()
+    maven {
+      url "http://maven.jenkins.cloudera.com:8081/artifactory/cloudera-mirrors"
+    }
   }
 }
 
@@ -61,6 +69,9 @@ subprojects {
                   repository(url: "${mavenUrl}") {
                       authentication(userName: "${mavenUsername}", password: "${mavenPassword}")
                   }
+		  snapshotRepository(url: "${mavenSnapshotUrl}") {
+		      authentication(userName: "${mavenUsername}", password: "${mavenPassword}")
+		  }
                   afterEvaluate {
                       pom.artifactId = "${archivesBaseName}"
                       pom.project {
@@ -82,7 +93,7 @@ subprojects {
     }
   }
 
-  jar {
+  jar  {
     from '../LICENSE'
     from '../NOTICE'
   }
@@ -139,13 +150,11 @@ subprojects {
 
 for ( sv in ['2_9_1', '2_9_2', '2_10_1', '2_11'] ) {
   String svInDot = sv.replaceAll( "_", ".")
-
   tasks.create(name: "jar_core_${sv}", type: GradleBuild) {
     buildFile = './build.gradle'
     tasks = ['core:jar']
     startParameter.projectProperties = [scalaVersion: "${svInDot}"]
   }
-
   tasks.create(name: "test_core_${sv}", type: GradleBuild) {
     buildFile = './build.gradle'
     tasks = ['core:test']
@@ -194,22 +203,22 @@ tasks.create(name: "uploadArchivesAll", dependsOn: ['uploadCoreArchives_2_9_1', 
 }
 
 project(':core') {
+
+ apply from: "$rootDir/version.properties" 
   println "Building project 'core' with Scala version $scalaVersion"
-
-  apply plugin: 'scala'
+ apply plugin: 'scala'
   archivesBaseName = "kafka_${baseScalaVersion}"
-
   def (major, minor, trivial) = scalaVersion.tokenize('.')
 
   dependencies {
     compile project(':clients')
     compile "org.scala-lang:scala-library:$scalaVersion"
-    compile 'org.apache.zookeeper:zookeeper:3.4.6'
+    compile "org.apache.zookeeper:zookeeper:$zookeeper_version"
     compile 'com.101tec:zkclient:0.3'
     compile 'com.yammer.metrics:metrics-core:2.2.0'
     compile 'net.sf.jopt-simple:jopt-simple:3.2'
 
-    testCompile 'junit:junit:4.1'
+    testCompile 'junit:junit:4.8.1'
     testCompile 'org.easymock:easymock:3.0'
     testCompile 'org.objenesis:objenesis:1.2'
     testCompile project(':clients')
@@ -277,55 +286,6 @@ project(':core') {
 
   artifacts {
     archives testJar
-  }
-}
-
-project(':contrib:hadoop-consumer') {
-  archivesBaseName = "kafka-hadoop-consumer"
-
-  dependencies {
-    compile project(':core')
-    compile "org.apache.avro:avro:1.4.0"
-    compile "org.apache.pig:pig:0.8.0"
-    compile "commons-logging:commons-logging:1.0.4"
-    compile "org.codehaus.jackson:jackson-core-asl:1.5.5"
-    compile "org.codehaus.jackson:jackson-mapper-asl:1.5.5"
-    compile "org.apache.hadoop:hadoop-core:0.20.2"
-  }
-
-  configurations {
-    // manually excludes some unnecessary dependencies
-    compile.exclude module: 'javax'
-    compile.exclude module: 'jms'
-    compile.exclude module: 'jmxri'
-    compile.exclude module: 'jmxtools'
-    compile.exclude module: 'mail'
-    compile.exclude module: 'netty'
-  }
-}
-
-project(':contrib:hadoop-producer') {
-  archivesBaseName = "kafka-hadoop-producer"
-
-  dependencies {
-    compile project(':core')
-    compile("org.apache.avro:avro:1.4.0") { force = true }
-    compile "org.apache.pig:pig:0.8.0"
-    compile "commons-logging:commons-logging:1.0.4"
-    compile "org.codehaus.jackson:jackson-core-asl:1.5.5"
-    compile "org.codehaus.jackson:jackson-mapper-asl:1.5.5"
-    compile "org.apache.hadoop:hadoop-core:0.20.2"
-    compile "org.apache.pig:piggybank:0.12.0"
-  }
-
-  configurations {
-    // manually excludes some unnecessary dependencies
-    compile.exclude module: 'javax'
-    compile.exclude module: 'jms'
-    compile.exclude module: 'jmxri'
-    compile.exclude module: 'jmxtools'
-    compile.exclude module: 'mail'
-    compile.exclude module: 'netty'
   }
 }
 

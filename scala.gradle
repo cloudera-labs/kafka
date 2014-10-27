@@ -9,3 +9,5 @@ if (scalaVersion.startsWith('2.10')) {
 } else {
     ext.baseScalaVersion = scalaVersion
 }
+ext.defaultScalaVersion = '2.10.1'
+ext.baseScalaVersion = (scalaVersion.startsWith('2.10')) ? '2.10' : scalaVersion
