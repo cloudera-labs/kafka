@@ -61,11 +61,11 @@ subprojects {
     repositories {
       signing {
           if (isVerificationRequired(project)) {
-              sign configurations.archives
+           //   sign configurations.archives
 
               // To test locally, replace mavenUrl in ~/.gradle/gradle.properties to file://localhost/tmp/myRepo/
               mavenDeployer {
-                  beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+         //         beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                   repository(url: "${mavenUrl}") {
                       authentication(userName: "${mavenUsername}", password: "${mavenPassword}")
                   }
